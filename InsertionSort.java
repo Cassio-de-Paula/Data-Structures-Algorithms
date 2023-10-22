@@ -16,6 +16,8 @@ public class InsertionSort {
             System.out.print(array[i] + " ");
         }
 
+        System.out.println();
+
         int[] orderedArray = insertionSort(array);
 
         System.out.println("\nOrdered array: ");
@@ -31,12 +33,17 @@ public class InsertionSort {
             int cont = i;
             if (array[cont] < array[cont - 1]) {
                 temp = array[cont];
-                while (temp < array[cont - 1] && cont > -1) {
+                while (cont > 0 && temp < array[cont - 1]) {
                     array[cont] = array[cont - 1];
                     array[cont - 1] = temp;
                     cont--;
                 }
             }
+
+            for (int j = 0; j < array.length; j++) {
+                System.out.print(array[j] + " ");
+            }
+            System.out.println();
         }
         return array;
     }

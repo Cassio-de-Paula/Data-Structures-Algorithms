@@ -35,7 +35,7 @@ public class SelectionSort {
 
             for (int j = i; j < array.length; j++) {
                 if (min > array[j]) {
-                    temp = array[i];
+                    temp = min;
                     min = array[j];
                     array[j] = temp;
                 }
