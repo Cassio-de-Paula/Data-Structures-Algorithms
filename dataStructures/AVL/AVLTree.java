@@ -13,14 +13,49 @@ public class AVLTree {
         return node;
     }
 
-    public void search(int value) {
+    public Node search(int value) {
         Node res = recursiveSearch(root, value);
 
         if (res != null) {
             System.out.println("O nó " + res.value + " pertence a árvore");
+            return res;
         } else {
             System.out.println("O nó " + value + " não pertence à árvore");
         }
+
+        return null;
+    }
+
+    public Node cutNode(int value) {
+        Node node = search(value);
+
+        if (node.right == null && node.left == null) {
+            node = null;
+        } else if (node.right == null && node.left != null) {
+            node = node.left;
+            node.left = null;
+        } else if (node.right != null && node.left == null) {
+            node = node.right;
+            node.right = null;
+        } else {
+            if (node.value < root.value) {
+                Node rightNode = node.right;
+                Node leftestNode = rightNode.left;
+
+                while (node.left.value > leftestNode.value) {
+                    leftestNode.left = search(leftestNode.value);
+                }
+
+                node.right = null;
+                node = recursiveInsert(rightNode, value);
+
+                leftestNode.left = recursiveInsert(leftestNode, value);
+            } else {
+
+            }
+        }
+
+        return node;
     }
 
     private Node recursiveSearch(Node node, int value) {
@@ -65,16 +100,18 @@ public class AVLTree {
             leftRotate(node);
         }
         // Lado esquerdo gera desequilibrio, mas o valor será inserido a esquerda do nó
-        // filho
+        // filho (Giro para esquerda redefinindo a esquerda do nó em desequilíbrio e
+        // depois giro para direita)
         if (balance > 1 && value > node.left.value) {
-            node.right = rightRotate(node.right);
-            leftRotate(node);
-        }
-        // Lado direito gera desequilibrio, mas o valor será inserido a direita do nó
-        // filho
-        if (balance < -1 && value < node.right.value) {
             node.left = leftRotate(node.left);
             rightRotate(node);
+        }
+        // Lado direito gera desequilibrio, mas o valor será inserido a direita do nó
+        // filho (Giro para direita redefinindo a direita do nó em desequilíbrio e
+        // depois giro para esquerda)
+        if (balance < -1 && value < node.right.value) {
+            node.right = rightRotate(node.right);
+            leftRotate(node);
         }
 
         return node;
