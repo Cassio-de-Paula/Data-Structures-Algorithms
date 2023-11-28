@@ -28,34 +28,53 @@ public class AVLTree {
 
     public Node cutNode(int value) {
         Node node = search(value);
+        Node predecessor = findPredecessor(node, root);
+        Node successor = findSuccessor(node, root);
 
-        if (node.right == null && node.left == null) {
+        if (node.left == null && node.right == null) {
+            // Verifica se o nó a ser removido é uma folha
             node = null;
-        } else if (node.right == null && node.left != null) {
-            node = node.left;
-            node.left = null;
-        } else if (node.right != null && node.left == null) {
+        } else if (node.left == null && node.right != null) {
+            // Verifica se o nó possui um nó direito
             node = node.right;
-            node.right = null;
+        } else if (node.left != null && node.right == null) {
+            // Verifica se o nó a ser removido possui um galho esquerdo
+            node = node.left;
         } else {
-            if (node.value < root.value) {
-                Node rightNode = node.right;
-                Node leftestNode = rightNode.left;
-
-                while (node.left.value > leftestNode.value) {
-                    leftestNode.left = search(leftestNode.value);
-                }
-
-                node.right = null;
-                node = recursiveInsert(rightNode, value);
-
-                leftestNode.left = recursiveInsert(leftestNode, value);
-            } else {
-
-            }
+            // Verifica se o nó a ser removido possui ambos os nós direito e esquerdo
         }
 
+        predecessor.height = 1 + max(height(predecessor.left), height(predecessor.right));
+
+        int balance = getBalance(predecessor);
+
+        // Realiza as rotações
+
         return node;
+    }
+
+    private Node findSuccessor(Node node, Node root) {
+        if (node.right == root || node.left == root) {
+            return root;
+        } else if (node.value > root.value) {
+            root = findSuccessor(node, root.right);
+        } else if (node.value > root.value) {
+            root = findSuccessor(node, root.left);
+        }
+
+        return null;
+    }
+
+    private Node findPredecessor(Node node, Node root) {
+        if (root.right == node || root.left == node) {
+            return root;
+        } else if (root.value > node.value) {
+            root = findPredecessor(node, root.right);
+        } else {
+            root = findPredecessor(node, root.right);
+        }
+
+        return null;
     }
 
     private Node recursiveSearch(Node node, int value) {
