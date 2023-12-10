@@ -3,14 +3,14 @@ public class AVLTree {
     Node root;
 
     public Node insert(int value) {
-        Node node = recursiveInsert(root, value);
+        root = recursiveInsert(root, new Node(value));
 
-        if (node == null) {
+        if (root == null) {
             System.out.println("Este valor já existe na árvore");
             return null;
         }
 
-        return node;
+        return root;
     }
 
     public Node search(int value) {
@@ -26,114 +26,164 @@ public class AVLTree {
         return null;
     }
 
-    public Node cutNode(int value) {
-        Node node = search(value);
-        Node predecessor = findPredecessor(node, root);
-        Node successor = findSuccessor(node, root);
+    public Node remove(int value) {
 
-        if (node.left == null && node.right == null) {
-            // Verifica se o nó a ser removido é uma folha
-            node = null;
-        } else if (node.left == null && node.right != null) {
-            // Verifica se o nó possui um nó direito
-            node = node.right;
-        } else if (node.left != null && node.right == null) {
-            // Verifica se o nó a ser removido possui um galho esquerdo
-            node = node.left;
+        if (search(value) != null) {
+            recursiveRemove(value, this.root);
+        }
+
+        return root;
+    }
+
+    public void display() {
+        recursiveDisplay(this.root);
+    }
+
+    private void recursiveDisplay(Node root) {
+        if (root != null) {
+            recursiveDisplay(root.left);
+            System.out.print(root.value + " ");
+            recursiveDisplay(root.right);
+        }
+    }
+
+    private Node recursiveRemove(int value, Node root) {
+
+        if (value > root.value) {
+            // Busca pelo nó a partir da raíz
+            root.right = recursiveRemove(value, root.right);
+        } else if (value < root.value) {
+            // Busca pelo nó a partir da raíz
+            root.left = recursiveRemove(value, root.left);
         } else {
-            // Verifica se o nó a ser removido possui ambos os nós direito e esquerdo
+            // Analisa os casos após encontrar o nó
+            if (root.left == null && root.right == null) {
+                // Caso 1: Nó é uma folha
+                return null;
+            } else if (root.right == null) {
+                // Caso 2: Nó possui filho à esquerda
+                return root.left;
+            } else if (root.left == null) {
+                // Caso 3: Nó possui filho à direita
+                return root.right;
+            } else {
+                // Caso 4: nó possui filhos à direita e esquerda
+                if (root.value < this.root.value) {
+                    // Caso A: Nó a ser removido é menor que a raíz da árvore
+                    root.value = nextValue(root);
+                    root.right = recursiveRemove(root.value, root.right);
+                } else if (root.value > this.root.value || root.value == this.root.value) {
+                    // Caso B: Nó a ser removido é maior ou igual à raíz da árvore
+                    root.value = previousValue(root);
+                    root.left = recursiveRemove(root.value, root.left);
+                }
+            }
         }
 
-        predecessor.height = 1 + max(height(predecessor.left), height(predecessor.right));
+        root.height = 1 + max(height(root.left), height(root.right));
 
-        int balance = getBalance(predecessor);
-
-        // Realiza as rotações
-
-        return node;
-    }
-
-    private Node findSuccessor(Node node, Node root) {
-        if (node.right == root || node.left == root) {
-            return root;
-        } else if (node.value > root.value) {
-            root = findSuccessor(node, root.right);
-        } else if (node.value > root.value) {
-            root = findSuccessor(node, root.left);
-        }
-
-        return null;
-    }
-
-    private Node findPredecessor(Node node, Node root) {
-        if (root.right == node || root.left == node) {
-            return root;
-        } else if (root.value > node.value) {
-            root = findPredecessor(node, root.right);
-        } else {
-            root = findPredecessor(node, root.right);
-        }
-
-        return null;
-    }
-
-    private Node recursiveSearch(Node node, int value) {
-        if (node.value == value) {
-            return node;
-        } else if (value > node.value) {
-            return recursiveSearch(node.right, value);
-        } else if (value < node.value) {
-            return recursiveInsert(node.left, value);
-        }
-        return null;
-    }
-
-    private Node recursiveInsert(Node root, int value) {
-        Node node = new Node(value);
-
-        // Inserção padrão da BST, o que é maior vai pra direita, o que é menor, pra
-        // esquerda.
-        if (root == null)
-            root = node;
-        else if (node.value > root.value)
-            root.right = recursiveInsert(root.right, value);
-        else if (node.value < root.value)
-            root.left = recursiveInsert(root.left, value);
-        else
-            return null;
-
-        // Atribuir altura do nó
-        node.height = 1 + max(height(node.left), height(node.right));
-
-        // Verifica o fator de balanceamento da árvore
-        int balance = getBalance(node);
+        int balance = getBalance(root);
 
         // Realiza as rotações
 
         // Giro para direita, pois o lado esquerdo está gerando desequilíbrio
-        if (balance > 1 && value < node.left.value) {
-            rightRotate(node);
+        if (balance > 1 && value < root.left.value) {
+            root = rightRotate(root);
         }
         // Giro para esquerda, pois o lado direito está gerando desequilíbrio
-        if (balance < -1 && value > node.right.value) {
-            leftRotate(node);
+        if (balance < -1 && value > root.right.value) {
+            root = leftRotate(root);
         }
         // Lado esquerdo gera desequilibrio, mas o valor será inserido a esquerda do nó
         // filho (Giro para esquerda redefinindo a esquerda do nó em desequilíbrio e
         // depois giro para direita)
-        if (balance > 1 && value > node.left.value) {
-            node.left = leftRotate(node.left);
-            rightRotate(node);
+        if (balance > 1 && value > root.left.value) {
+            root.left = leftRotate(root.left);
+            root = rightRotate(root);
         }
         // Lado direito gera desequilibrio, mas o valor será inserido a direita do nó
         // filho (Giro para direita redefinindo a direita do nó em desequilíbrio e
         // depois giro para esquerda)
-        if (balance < -1 && value < node.right.value) {
-            node.right = rightRotate(node.right);
-            leftRotate(node);
+        if (balance < -1 && value < root.right.value) {
+            root.right = rightRotate(root.right);
+            root = leftRotate(root);
         }
 
-        return node;
+        return root;
+    }
+
+    private int previousValue(Node root) {
+        while (root.left != null) {
+            root = root.left;
+        }
+
+        return root.value;
+    }
+
+    private int nextValue(Node root) {
+        while (root.right != null) {
+            root = root.right;
+        }
+
+        return root.value;
+    }
+
+    private Node recursiveSearch(Node root, int value) {
+        if (root.value == value) {
+            return root;
+        } else if (value > root.value) {
+            return recursiveSearch(root.right, value);
+        } else if (value < root.value) {
+            return recursiveSearch(root.left, value);
+        }
+        return null;
+    }
+
+    private Node recursiveInsert(Node root, Node node) {
+        // Inserção padrão da BST, o que é maior vai pra direita, o que é menor, pra
+        // esquerda.
+        if (root == null) {
+            root = node;
+        } else if (node.value > root.value) {
+            root.right = recursiveInsert(root.right, node);
+        } else if (node.value < root.value) {
+            root.left = recursiveInsert(root.left, node);
+        } else {
+            return null;
+        }
+
+        // Atribuir altura do nó
+        root.height = 1 + max(height(root.left), height(root.right));
+
+        // Verifica o fator de balanceamento da árvore
+        int balance = getBalance(root);
+
+        // Realiza as rotações
+
+        // Giro para direita, pois o lado esquerdo está gerando desequilíbrio
+        if (balance > 1 && node.value < root.left.value) {
+            root = rightRotate(root);
+        }
+        // Giro para esquerda, pois o lado direito está gerando desequilíbrio
+        if (balance < -1 && node.value > root.right.value) {
+            root = leftRotate(root);
+        }
+        // Lado esquerdo gera desequilibrio, mas o valor será inserido a esquerda do nó
+        // filho (Giro para esquerda redefinindo a esquerda do nó em desequilíbrio e
+        // depois giro para direita)
+        if (balance > 1 && node.value > root.left.value) {
+            root.left = leftRotate(root.left);
+            root = rightRotate(root);
+        }
+        // Lado direito gera desequilibrio, mas o valor será inserido a direita do nó
+        // filho (Giro para direita redefinindo a direita do nó em desequilíbrio e
+        // depois giro para esquerda)
+        if (balance < -1 && node.value < root.right.value) {
+            root.right = rightRotate(root.right);
+            root = leftRotate(root);
+        }
+
+        return root;
     }
 
     private Node leftRotate(Node node) {

@@ -10,5 +10,13 @@ public class Main {
         avl.insert(17);
         avl.insert(16);
 
+        avl.display();
+
+        avl.search(11);
+
+        avl.remove(11);
+
+        avl.display();
+
     }
 }
